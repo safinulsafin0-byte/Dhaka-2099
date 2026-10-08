@@ -9,11 +9,12 @@ on:
       - '.github/workflows/android-apk.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
     runs-on: ubuntu-24.04
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -34,17 +35,39 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-29" "build-tools;35.0.0" "ndk;25.2.9519653"
 
-      - name: Build signed test APK
+      - name: Build APK
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
           ANDROID_NDK_VERSION: 25.2.9519653
           ANDROID_BUILD_TOOLS: 35.0.0
         run: ./android/build_android.sh
 
-      - name: Upload APK
+      - name: Rename APK
+        run: |
+          mkdir -p release
+          APK=$(find android/output -name "*.apk" | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "APK not found"
+            exit 1
+          fi
+          cp "$APK" release/Dhaka-2099.apk
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v5
         with:
           name: Dhaka-2099-Android-APK
-          path: android/output/*.apk
+          path: release/Dhaka-2099.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v${{ github.run_number }}
+          name: Dhaka 2099 Android v${{ github.run_number }}
+          body: |
+            Dhaka 2099 Android APK
+
+            Install the APK on an Android device to play.
+          files: release/Dhaka-2099.apk
+          make_latest: true
