@@ -59,7 +59,7 @@ build_app_abi() {
   mkdir -p "$out/obj" "$out/lib/$abi"
 
   local cflags=( -std=gnu11 -O3 -fPIC -ffunction-sections -funwind-tables -fstack-protector-strong
-    -D__ANDROID__ -DPLATFORM_ANDROID -D__ANDROID_API__="$API"
+    -D__ANDROID__ -DPLATFORM_ANDROID
     -I"$ROOT_DIR/src" -I"$RAYLIB/src" -I"$glue" )
   if [[ "$arch" == "arm" ]]; then cflags+=( -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 ); else cflags+=( -mfix-cortex-a53-835769 ); fi
 
@@ -70,7 +70,7 @@ build_app_abi() {
 
   "$compiler" -shared -fPIC -Wl,-soname,libmain.so \
     -Wl,-u,ANativeActivity_onCreate -Wl,--no-undefined \
-    -Wl,--wrap=fopen -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now \
+    -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now \
     -L"$WORK/raylib-$arch" \
     -o "$out/lib/$abi/libmain.so" \
     "$out/obj/"*.o "$rlib" \
