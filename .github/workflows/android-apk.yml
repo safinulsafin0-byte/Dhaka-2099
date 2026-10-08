@@ -42,15 +42,21 @@ jobs:
           ANDROID_BUILD_TOOLS: 35.0.0
         run: ./android/build_android.sh
 
-      - name: Rename APK
+      - name: Prepare APK
         run: |
           mkdir -p release
-          APK=$(find android/output -name "*.apk" | head -n 1)
+          APK=$(find android/output -type f -name "*.apk" | head -n 1)
+
           if [ -z "$APK" ]; then
-            echo "APK not found"
+            echo "ERROR: APK not found"
             exit 1
           fi
+
+          echo "APK found: $APK"
           cp "$APK" release/Dhaka-2099.apk
+
+          echo "Release files:"
+          ls -lh release/
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v5
@@ -66,8 +72,14 @@ jobs:
           tag_name: android-v${{ github.run_number }}
           name: Dhaka 2099 Android v${{ github.run_number }}
           body: |
-            Dhaka 2099 Android APK
+            # Dhaka 2099 — Android
 
-            Install the APK on an Android device to play.
-          files: release/Dhaka-2099.apk
+            Android APK release for Dhaka 2099.
+
+            Download the APK from the Assets section below.
+          files: |
+            release/Dhaka-2099.apk
+          fail_on_unmatched_files: true
           make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
