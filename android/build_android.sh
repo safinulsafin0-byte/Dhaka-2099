@@ -44,7 +44,7 @@ build_raylib() {
     RAYLIB_LIBTYPE=STATIC \
     RAYLIB_RELEASE_PATH="$out" \
     -j2
-  cp "$out/libraylib.a" "$out/libraylib.a"
+  # Raylib library is already in the requested output directory
 }
 
 build_app_abi() {
